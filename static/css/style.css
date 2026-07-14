@@ -1,0 +1,331 @@
+/* Import Modern Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root {
+    /* Color Palette - Dark Mode default */
+    --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #020617 100%);
+    --card-bg: rgba(30, 41, 59, 0.45);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #8b5cf6;
+    --accent-success: #10b981;
+    --accent-danger: #ef4444;
+    --accent-warning: #f59e0b;
+    --nav-bg: rgba(15, 23, 42, 0.6);
+    --shadow-glow: 0 0 25px rgba(59, 130, 246, 0.25);
+    --glass-blur: blur(12px);
+    --transition-speed: 0.3s;
+}
+
+[data-theme="light"] {
+    /* Color Palette - Light Mode */
+    --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
+    --card-bg: rgba(255, 255, 255, 0.7);
+    --card-border: rgba(0, 0, 0, 0.06);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --accent-blue: #2563eb;
+    --accent-cyan: #0891b2;
+    --accent-purple: #7c3aed;
+    --accent-success: #059669;
+    --accent-danger: #dc2626;
+    --accent-warning: #d97706;
+    --nav-bg: rgba(241, 245, 249, 0.6);
+    --shadow-glow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+}
+
+/* Glassmorphism Navigation */
+.navbar-custom {
+    background: var(--nav-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--card-border);
+    transition: all var(--transition-speed) ease;
+}
+
+.navbar-brand-custom {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.5rem;
+}
+
+.nav-link-custom {
+    color: var(--text-primary) !important;
+    font-weight: 500;
+    margin: 0 10px;
+    position: relative;
+    opacity: 0.85;
+}
+
+.nav-link-custom::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 0;
+    background-color: var(--accent-blue);
+    transition: width var(--transition-speed) ease;
+}
+
+.nav-link-custom:hover {
+    opacity: 1;
+}
+
+.nav-link-custom:hover::after,
+.nav-link-custom.active::after {
+    width: 100%;
+}
+
+/* Premium Card Design */
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: var(--shadow-glow);
+    transition: transform var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow var(--transition-speed) ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
+}
+
+/* Interactive Elements & Buttons */
+.btn-glow {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+    border: none;
+    color: white !important;
+    font-weight: 600;
+    padding: 12px 28px;
+    border-radius: 30px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    transition: all var(--transition-speed) ease;
+    font-family: 'Outfit', sans-serif;
+}
+
+.btn-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+    filter: brightness(1.1);
+}
+
+/* Inputs & Form Styling */
+.form-label-custom {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+}
+
+.form-control-custom {
+    background: rgba(15, 23, 42, 0.25);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    color: var(--text-primary) !important;
+    padding: 12px 16px;
+    transition: all var(--transition-speed) ease;
+}
+
+[data-theme="light"] .form-control-custom {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.form-control-custom:focus {
+    background: rgba(15, 23, 42, 0.4);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+    outline: none;
+}
+
+/* Theme Switcher Toggle */
+.theme-toggle-btn {
+    background: none;
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--transition-speed) ease;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Landing Page Dashboard Stats */
+.stat-box {
+    text-align: center;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.stat-number {
+    font-size: 2.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Result Gauges and Badges */
+.result-badge {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 10px 30px;
+    border-radius: 50px;
+    display: inline-block;
+    margin: 15px 0;
+}
+
+.badge-approved {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-success);
+    border: 1px solid var(--accent-success);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+}
+
+.badge-rejected {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--accent-danger);
+    border: 1px solid var(--accent-danger);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+/* Gauge styling */
+.gauge-container {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.gauge-svg {
+    transform: rotate(-90deg);
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 12;
+}
+
+[data-theme="light"] .gauge-bg {
+    stroke: rgba(0, 0, 0, 0.08);
+}
+
+.gauge-fill {
+    fill: none;
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease-out;
+}
+
+.gauge-fill-approved {
+    stroke: var(--accent-success);
+    filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.5));
+}
+
+.gauge-fill-rejected {
+    stroke: var(--accent-danger);
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.5));
+}
+
+.gauge-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Loading Spinner Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 9999;
+}
+
+.spinner-custom {
+    width: 60px;
+    height: 60px;
+    border: 5px solid rgba(59, 130, 246, 0.1);
+    border-top-color: var(--accent-blue);
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    margin-top: 20px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* Footer style */
+footer {
+    margin-top: auto;
+    background: rgba(15, 23, 42, 0.3);
+    border-top: 1px solid var(--card-border);
+    padding: 20px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Credit Card Approval Prediction{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://img.icons8.com/color/48/000000/bank-card-back-side.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Loading Spinner Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner-custom"></div>
+        <div class="loading-text">Analyzing applicant data and running ML prediction...</div>
+    </div>
+
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-custom navbar-dark py-3">
+        <div class="container">
+            <a class="navbar-brand navbar-brand-custom d-flex align-items-center gap-2" href="{{ url_for('home') }}">
+                <i class="fas fa-credit-card"></i>
+                <span>CreditShield AI</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'predict' %}active{% endif %}" href="{{ url_for('predict_form') }}">Predict Approval</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'about' %}active{% endif %}" href="{{ url_for('about') }}">About Project</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {% if active_page == 'contact' %}active{% endif %}" href="{{ url_for('contact') }}">Contact Us</a>
+                    </li>
+                    <li class="nav-item ms-lg-3 mt-3 mt-lg-0">
+                        <button id="theme-toggle" class="theme-toggle-btn">
+                            <i class="fas fa-sun"></i> Light Mode
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Block -->
+    <main class="container my-5">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-2"><i class="fas fa-shield-halved text-primary me-2"></i><strong>Credit Card Approval Prediction System</strong></p>
+            <p class="mb-0">Designed for APSCHE Final Evaluation & IBM Watson Machine Learning Deployment Integration</p>
+            <p class="mt-2 text-muted" style="font-size: 0.8rem;">&copy; 2026 CreditShield AI. Developed by Team AI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

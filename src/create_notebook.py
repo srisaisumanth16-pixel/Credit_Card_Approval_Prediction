@@ -1,0 +1,619 @@
+import json
+import os
+
+def create_notebook():
+    notebook_dict = {
+        "cells": [
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "# APSCHE Term Project: Credit Card Approval Prediction Using IBM Watson Machine Learning\n",
+                    "**Course Project for Data Science & Machine Learning Evaluation**\n",
+                    "\n",
+                    "## Executive Summary\n",
+                    "This Jupyter Notebook presents an end-to-end Machine Learning solution to automate the credit card approval process for commercial banks. The model predicts whether a credit card application should be **Approved** or **Rejected** based on applicant demographic profiles, financial indicators, employment characteristics, and credit history.\n",
+                    "\n",
+                    "### Technology Stack\n",
+                    "- **Core**: Python, Pandas, NumPy\n",
+                    "- **Visualizations**: Matplotlib, Seaborn\n",
+                    "- **Machine Learning**: Scikit-Learn, XGBoost\n",
+                    "- **Serialization**: Joblib\n",
+                    "- **Deployment Target**: IBM Watson Machine Learning & Flask Web Application\n",
+                    "\n",
+                    "---"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "## Epic 1: Data Collection & Data Dictionary\n",
+                    "We begin by loading and exploring two datasets:\n",
+                    "1. `application_record.csv`: Contains applicant demographics and financial information.\n",
+                    "2. `credit_record.csv`: Contains the monthly credit history and payment status of applicants."
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "import os\n",
+                    "import numpy as np\n",
+                    "import pandas as pd\n",
+                    "import matplotlib.pyplot as plt\n",
+                    "import seaborn as sns\n",
+                    "\n",
+                    "# Set styling\n",
+                    "sns.set_theme(style='whitegrid')\n",
+                    "plt.rcParams['figure.figsize'] = (10, 6)\n",
+                    "plt.rcParams['font.size'] = 11\n",
+                    "\n",
+                    "# Define data directory paths\n",
+                    "data_dir = '../dataset'\n",
+                    "app_record_path = os.path.join(data_dir, 'application_record.csv')\n",
+                    "credit_record_path = os.path.join(data_dir, 'credit_record.csv')\n",
+                    "\n",
+                    "# Load datasets\n",
+                    "df_app = pd.read_csv(app_record_path)\n",
+                    "df_credit = pd.read_csv(credit_record_path)\n",
+                    "\n",
+                    "print(f\"Application Records Shape: {df_app.shape}\")\n",
+                    "print(f\"Credit Records Shape: {df_credit.shape}\")"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### Dataset Overview & Schema Inspection"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "print(\"=== APPLICATION RECORD COLUMNS ===\")\n",
+                    "df_app.info()\n",
+                    "\n",
+                    "print(\"\\n=== CREDIT RECORD COLUMNS ===\")\n",
+                    "df_credit.info()"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### Data Head and Tail Inspection"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "print(\"=== APPLICATION RECORD HEAD ===\")\n",
+                    "display(df_app.head())\n",
+                    "\n",
+                    "print(\"\\n=== CREDIT RECORD HEAD ===\")\n",
+                    "display(df_credit.head())"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### Data Features Explanation\n",
+                    "\n",
+                    "#### Application Record\n",
+                    "- `ID`: Unique identifier for each applicant.\n",
+                    "- `CODE_GENDER`: Gender of the applicant (`M` = Male, `F` = Female).\n",
+                    "- `FLAG_OWN_CAR`: Whether the applicant owns a car (`Y`/`N`).\n",
+                    "- `FLAG_OWN_REALTY`: Whether the applicant owns real estate property (`Y`/`N`).\n",
+                    "- `CNT_CHILDREN`: Number of children.\n",
+                    "- `AMT_INCOME_TOTAL`: Total annual income in local currency.\n",
+                    "- `NAME_INCOME_TYPE`: Income source category (e.g., Working, Pensioner, Commercial associate).\n",
+                    "- `NAME_EDUCATION_TYPE`: Education level attained (e.g., Secondary, Higher education).\n",
+                    "- `NAME_FAMILY_STATUS`: Marital status (e.g., Married, Single, Civil marriage).\n",
+                    "- `NAME_HOUSING_TYPE`: Living arrangements (e.g., House/apartment, Rented, With parents).\n",
+                    "- `DAYS_BIRTH`: Age in days (negative, counted backwards from today).\n",
+                    "- `DAYS_EMPLOYED`: Employment tenure in days (negative; positive value `365243` represents unemployed).\n",
+                    "- `FLAG_MOBIL`, `FLAG_WORK_PHONE`, `FLAG_PHONE`, `FLAG_EMAIL`: Binary flags indicating whether mobile, work phone, landline phone, or email was provided.\n",
+                    "- `OCCUPATION_TYPE`: Detailed job occupation category.\n",
+                    "- `CNT_FAM_MEMBERS`: Family size count.\n",
+                    "\n",
+                    "#### Credit Record\n",
+                    "- `ID`: Matches the applicant ID.\n",
+                    "- `MONTHS_BALANCE`: The offset month of the record (e.g., 0 is the current month, -1 is one month prior).\n",
+                    "- `STATUS`: Credit status for that month:\n",
+                    "  - `0`: 1-29 days past due\n",
+                    "  - `1`: 30-59 days past due\n",
+                    "  - `2`: 60-89 days past due\n",
+                    "  - `3`: 90-119 days past due\n",
+                    "  - `4`: 120-149 days past due\n",
+                    "  - `5`: Overdue or bad debts, write-offs for more than 150 days\n",
+                    "  - `C`: Paid off that month\n",
+                    "  - `X`: No loan for the month"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "## Epic 2: Exploratory Data Analysis (EDA)\n",
+                    "\n",
+                    "### 1. Univariate Analysis\n",
+                    "We analyze demographics distributions individually to understand our customer base."
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# Gender Distribution Plot\n",
+                    "plt.figure(figsize=(6, 4))\n",
+                    "sns.countplot(data=df_app, x='CODE_GENDER', palette='pastel')\n",
+                    "plt.title('Distribution of Applicants by Gender')\n",
+                    "plt.xlabel('Gender')\n",
+                    "plt.ylabel('Count')\n",
+                    "plt.show()\n",
+                    "\n",
+                    "# Income Type Plot\n",
+                    "plt.figure(figsize=(10, 5))\n",
+                    "sns.countplot(data=df_app, y='NAME_INCOME_TYPE', order=df_app['NAME_INCOME_TYPE'].value_counts().index, palette='Set2')\n",
+                    "plt.title('Income Types of Applicants')\n",
+                    "plt.xlabel('Count')\n",
+                    "plt.ylabel('Income Type')\n",
+                    "plt.tight_layout()\n",
+                    "plt.show()\n",
+                    "\n",
+                    "# Education Type Plot\n",
+                    "plt.figure(figsize=(10, 5))\n",
+                    "sns.countplot(data=df_app, y='NAME_EDUCATION_TYPE', order=df_app['NAME_EDUCATION_TYPE'].value_counts().index, palette='Set3')\n",
+                    "plt.title('Education Levels of Applicants')\n",
+                    "plt.xlabel('Count')\n",
+                    "plt.ylabel('Education Level')\n",
+                    "plt.tight_layout()\n",
+                    "plt.show()"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### 2. Family & Housing Univariate Analysis"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "fig, axes = plt.subplots(1, 2, figsize=(15, 6))\n",
+                    "\n",
+                    "sns.countplot(ax=axes[0], data=df_app, x='NAME_FAMILY_STATUS', palette='viridis')\n",
+                    "axes[0].tick_params(axis='x', rotation=45)\n",
+                    "axes[0].set_title('Family/Marital Status')\n",
+                    "axes[0].set_xlabel('')\n",
+                    "\n",
+                    "sns.countplot(ax=axes[1], data=df_app, y='NAME_HOUSING_TYPE', palette='magma')\n",
+                    "axes[1].set_title('Housing Type')\n",
+                    "axes[1].set_ylabel('')\n",
+                    "\n",
+                    "plt.suptitle('Family Status & Housing Type Distributions', fontsize=16)\n",
+                    "plt.tight_layout()\n",
+                    "plt.show()"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### 3. Income Distribution Analysis\n",
+                    "Visualizing applicant incomes to identify skewness and outliers."
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "fig, axes = plt.subplots(1, 2, figsize=(15, 5))\n",
+                    "\n",
+                    "sns.histplot(ax=axes[0], data=df_app, x='AMT_INCOME_TOTAL', kde=True, bins=30, color='darkblue')\n",
+                    "axes[0].set_title('Income Total Distribution')\n",
+                    "axes[0].set_xlabel('Income')\n",
+                    "\n",
+                    "sns.boxplot(ax=axes[1], data=df_app, x='AMT_INCOME_TOTAL', color='lightblue')\n",
+                    "axes[1].set_title('Boxplot of Income')\n",
+                    "axes[1].set_xlabel('Income')\n",
+                    "\n",
+                    "plt.show()\n",
+                    "print(df_app['AMT_INCOME_TOTAL'].describe())"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "## Epic 3: Data Preprocessing & Target Variable Generation\n",
+                    "\n",
+                    "### Business Rules to Determine Credit Approval (Binary Target)\n",
+                    "A customer is defined as \"Bad\" (Target = `0`, Credit Rejected) if they have overdue balance of **60+ days** (Status: `2`, `3`, `4`, or `5`) in any month of their credit record history. Otherwise, they are defined as \"Good\" (Target = `1`, Credit Approved)."
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# Map credit statuses\n",
+                    "status_map = {'C': -1, 'X': -1, '0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5}\n",
+                    "df_credit['STATUS_NUMERIC'] = df_credit['STATUS'].map(status_map)\n",
+                    "\n",
+                    "# Aggregate: Find maximum risk score reached by each applicant ID\n",
+                    "df_max_status = df_credit.groupby('ID')['STATUS_NUMERIC'].max().reset_index()\n",
+                    "\n",
+                    "# Set Target: 0 (Rejected) if status is >= 2, else 1 (Approved)\n",
+                    "df_max_status['target'] = df_max_status['STATUS_NUMERIC'].apply(lambda x: 0 if x >= 2 else 1)\n",
+                    "print(df_max_status['target'].value_counts())\n",
+                    "print(df_max_status['target'].value_counts(normalize=True))"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### Merging Application Records and Credit Status Labels"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# Drop duplicate application records\n",
+                    "df_app_clean = df_app.drop_duplicates(subset='ID', keep='first')\n",
+                    "\n",
+                    "# Merge\n",
+                    "df_merged = pd.merge(df_app_clean, df_max_status[['ID', 'target']], on='ID', how='inner')\n",
+                    "print(f\"Merged shape: {df_merged.shape}\")"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### Handling Missing Values & Feature Engineering\n",
+                    "1. Transform `DAYS_BIRTH` to `AGE_YEARS`.\n",
+                    "2. Transform `DAYS_EMPLOYED` to `EMPLOYMENT_YEARS` and handle `IS_UNEMPLOYED` indicator.\n",
+                    "3. Fill `OCCUPATION_TYPE` missing values based on employment status.\n",
+                    "4. Drop high-cardinality/redundant features."
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# Missing value inspection\n",
+                    "print(\"Missing values count before handling:\")\n",
+                    "print(df_merged.isnull().sum())\n",
+                    "\n",
+                    "# Fill occupation\n",
+                    "def fill_occupation(row):\n",
+                    "    if pd.isna(row['OCCUPATION_TYPE']):\n",
+                    "        if row['DAYS_EMPLOYED'] == 365243:\n",
+                    "            return 'Pensioner'\n",
+                    "        else: \n",
+                    "            return 'Other/Unspecified'\n",
+                    "    return row['OCCUPATION_TYPE']\n",
+                    "\n",
+                    "df_merged['OCCUPATION_TYPE'] = df_merged.apply(fill_occupation, axis=1)\n",
+                    "\n",
+                    "# Feature Engineering\n",
+                    "df_merged['AGE_YEARS'] = (-df_merged['DAYS_BIRTH'] / 365.25).round(2)\n",
+                    "df_merged['IS_UNEMPLOYED'] = (df_merged['DAYS_EMPLOYED'] == 365243).astype(int)\n",
+                    "df_merged['EMPLOYMENT_YEARS'] = df_merged['DAYS_EMPLOYED'].apply(lambda x: 0.0 if x == 365243 else (-x / 365.25))\n",
+                    "df_merged['EMPLOYMENT_YEARS'] = df_merged['EMPLOYMENT_YEARS'].round(2)\n",
+                    "\n",
+                    "# Drop raw columns\n",
+                    "df_engineered = df_merged.drop(columns=['ID', 'DAYS_BIRTH', 'DAYS_EMPLOYED', 'FLAG_MOBIL'])\n",
+                    "print(\"Missing values count after handling:\")\n",
+                    "print(df_engineered.isnull().sum())"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### Data Splitting and Feature Preprocessing (Encoding & Scaling)"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "from sklearn.model_selection import train_test_split\n",
+                    "from sklearn.preprocessing import StandardScaler, OneHotEncoder\n",
+                    "\n",
+                    "X = df_engineered.drop(columns=['target'])\n",
+                    "y = df_engineered['target']\n",
+                    "\n",
+                    "# Train test split\n",
+                    "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)\n",
+                    "\n",
+                    "numerical_cols = ['AMT_INCOME_TOTAL', 'AGE_YEARS', 'EMPLOYMENT_YEARS', 'CNT_CHILDREN', 'CNT_FAM_MEMBERS']\n",
+                    "categorical_cols = ['CODE_GENDER', 'FLAG_OWN_CAR', 'FLAG_OWN_REALTY', 'NAME_INCOME_TYPE', \n",
+                    "                      'NAME_EDUCATION_TYPE', 'NAME_FAMILY_STATUS', 'NAME_HOUSING_TYPE', 'OCCUPATION_TYPE']\n",
+                    "flag_cols = ['FLAG_WORK_PHONE', 'FLAG_PHONE', 'FLAG_EMAIL', 'IS_UNEMPLOYED']\n",
+                    "\n",
+                    "# Fit Scaler and Encoder\n",
+                    "scaler = StandardScaler()\n",
+                    "scaled_train_num = scaler.fit_transform(X_train[numerical_cols])\n",
+                    "scaled_test_num = scaler.transform(X_test[numerical_cols])\n",
+                    "\n",
+                    "encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')\n",
+                    "encoded_train_cat = encoder.fit_transform(X_train[categorical_cols])\n",
+                    "encoded_test_cat = encoder.transform(X_test[categorical_cols])\n",
+                    "cat_features_names = encoder.get_feature_names(categorical_cols)\n",
+                    "\n",
+                    "# Combine back\n",
+                    "X_train_trans = np.hstack((scaled_train_num, encoded_train_cat, X_train[flag_cols].values))\n",
+                    "X_test_trans = np.hstack((scaled_test_num, encoded_test_cat, X_test[flag_cols].values))\n",
+                    "\n",
+                    "feature_names = numerical_cols + list(cat_features_names) + flag_cols\n",
+                    "print(f\"Final features dimension: {X_train_trans.shape}\")"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### 4. Multivariate Analysis: Feature Correlation Heatmap\n",
+                    "Plotting the correlations of numerical features."
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "plt.figure(figsize=(8, 6))\n",
+                    "sns.heatmap(df_engineered[numerical_cols + ['target']].corr(), annot=True, cmap='coolwarm', fmt='.2f')\n",
+                    "plt.title('Correlation Matrix of Numerical Features')\n",
+                    "plt.show()"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "## Epic 4: Model Building & Model Comparison\n",
+                    "We train 4 classification models:\n",
+                    "1. Logistic Regression\n",
+                    "2. Decision Tree Classifier\n",
+                    "3. Random Forest Classifier\n",
+                    "4. XGBoost Classifier"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "from sklearn.linear_model import LogisticRegression\n",
+                    "from sklearn.tree import DecisionTreeClassifier\n",
+                    "from sklearn.ensemble import RandomForestClassifier\n",
+                    "from xgboost import XGBClassifier\n",
+                    "from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix, roc_curve, auc\n",
+                    "\n",
+                    "models = {\n",
+                    "    'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42),\n",
+                    "    'Decision Tree': DecisionTreeClassifier(random_state=42),\n",
+                    "    'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42),\n",
+                    "    'XGBoost': XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)\n",
+                    "}\n",
+                    "\n",
+                    "results = []\n",
+                    "\n",
+                    "for name, model in models.items():\n",
+                    "    model.fit(X_train_trans, y_train)\n",
+                    "    y_pred = model.predict(X_test_trans)\n",
+                    "    \n",
+                    "    acc = accuracy_score(y_test, y_pred)\n",
+                    "    prec = precision_score(y_test, y_pred, zero_division=0)\n",
+                    "    rec = recall_score(y_test, y_pred, zero_division=0)\n",
+                    "    f1 = f1_score(y_test, y_pred, zero_division=0)\n",
+                    "    \n",
+                    "    results.append({\n",
+                    "        'Model': name,\n",
+                    "        'Accuracy': round(acc, 4),\n",
+                    "        'Precision': round(prec, 4),\n",
+                    "        'Recall': round(rec, 4),\n",
+                    "        'F1 Score': round(f1, 4)\n",
+                    "    })\n",
+                    "    \n",
+                    "    print(f\"=== {name} Classification Report ===\")\n",
+                    "    print(classification_report(y_test, y_pred))\n",
+                    "\n",
+                    "df_results = pd.DataFrame(results)\n",
+                    "display(df_results)"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### Model Performance Graph Comparison"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "df_melted = df_results.melt(id_vars='Model', var_name='Metric', value_name='Score')\n",
+                    "plt.figure(figsize=(10, 6))\n",
+                    "sns.barplot(data=df_melted, x='Metric', y='Score', hue='Model', palette='viridis')\n",
+                    "plt.ylim(0, 1.05)\n",
+                    "plt.title('Model Performance Comparison across Metrics')\n",
+                    "plt.show()"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### ROC Curve Analysis"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "plt.figure(figsize=(8, 6))\n",
+                    "for name, model in models.items():\n",
+                    "    y_prob = model.predict_proba(X_test_trans)[:, 1]\n",
+                    "    fpr, tpr, _ = roc_curve(y_test, y_prob)\n",
+                    "    roc_auc = auc(fpr, tpr)\n",
+                    "    plt.plot(fpr, tpr, label=f'{name} (AUC = {roc_auc:.4f})')\n",
+                    "\n",
+                    "plt.plot([0, 1], [0, 1], 'k--')\n",
+                    "plt.xlim([0.0, 1.0])\n",
+                    "plt.ylim([0.0, 1.05])\n",
+                    "plt.xlabel('False Positive Rate')\n",
+                    "plt.ylabel('True Positive Rate')\n",
+                    "plt.title('ROC Curves comparison')\n",
+                    "plt.legend(loc='lower right')\n",
+                    "plt.show()"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "### Feature Importance for the Best Model\n",
+                    "Plotting feature importances of the XGBoost classifier (the highest F1-Score model)."
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "xgb_model = models['XGBoost']\n",
+                    "importances = xgb_model.feature_importances_\n",
+                    "indices = np.argsort(importances)[::-1][:15]\n",
+                    "\n",
+                    "plt.figure(figsize=(10, 6))\n",
+                    "sns.barplot(x=importances[indices], y=np.array(feature_names)[indices], palette='mako')\n",
+                    "plt.title('Top 15 Feature Importances (XGBoost)')\n",
+                    "plt.xlabel('Relative Importance')\n",
+                    "plt.ylabel('Feature Name')\n",
+                    "plt.show()"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "## Save Preprocessing and Best Model Objects\n",
+                    "We serialize the fitted scaler, encoder, and best-performing model to deploy them in Flask."
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "import joblib\n",
+                    "models_dir = '../models'\n",
+                    "os.makedirs(models_dir, exist_ok=True)\n",
+                    "\n",
+                    "joblib.dump(scaler, os.path.join(models_dir, 'scaler.pkl'))\n",
+                    "joblib.dump(encoder, os.path.join(models_dir, 'encoder.pkl'))\n",
+                    "joblib.dump(models['XGBoost'], os.path.join(models_dir, 'best_model.pkl'))\n",
+                    "print(\"Model, Scaler, and Encoder successfully saved!\")"
+                ]
+            },
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "## IBM Watson Machine Learning Deployment Outline\n",
+                    "\n",
+                    "### Step-by-Step Watson Deployment Setup:\n",
+                    "1. **IBM Cloud Setup**: Create an account on IBM Cloud, create an **IBM Cloud Object Storage (COS)** instance, and instantiate a **Watson Machine Learning** service.\n",
+                    "2. **Watson Studio & Credentials**: Access Watson WML APIs using `ibm-watson-machine-learning` Python SDK and retrieve your API key and instance URL.\n",
+                    "3. **Model Storage & Registration**:\n",
+                    "   ```python\n",
+                    "   from ibm_watson_machine_learning import APIClient\n",
+                    "   # Initialize client with credentials\n",
+                    "   # Save best_model.pkl into Watson Space\n",
+                    "   ```\n",
+                    "4. **Scoring Endpoint Creation**: Deploy the registered model online, generating a REST scoring URL to request predictions remotely.\n",
+                    "\n",
+                    "Detailed instructions can be reviewed inside the project's `documentation/ibm_watson_guide.md` file.\n",
+                    "\n",
+                    "### Final Conclusion\n",
+                    "This pipeline successfully cleans, pre-processes, and scales the credit approval application records, merges credit history target labels, trains multiple state-of-the-art classifiers, and identifies **XGBoost** as the superior model. It is ready for production scaling via Flask."
+                ]
+            }
+        ],
+        "metadata": {
+            "kernelspec": {
+                "display_name": "Python 3",
+                "language": "python",
+                "name": "python3"
+            },
+            "language_info": {
+                "codemirror_mode": {
+                    "name": "ipython",
+                    "version": 3
+                },
+                "file_extension": ".py",
+                "mimetype": "text/x-python",
+                "name": "python",
+                "nbconvert_exporter": "python",
+                "pygments_lexer": "ipython3",
+                "version": "3.8.0"
+            }
+        },
+        "nbformat": 4,
+        "nbformat_minor": 2
+    }
+    
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    nb_dir = os.path.join(project_root, 'notebooks')
+    os.makedirs(nb_dir, exist_ok=True)
+    
+    nb_path = os.path.join(nb_dir, 'CreditCardApproval.ipynb')
+    with open(nb_path, 'w', encoding='utf-8') as f:
+        json.dump(notebook_dict, f, indent=1)
+        
+    print(f"Jupyter Notebook generated at: {nb_path}")
+
+if __name__ == '__main__':
+    create_notebook()

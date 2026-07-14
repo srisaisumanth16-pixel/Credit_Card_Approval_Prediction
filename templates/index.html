@@ -1,0 +1,180 @@
+{% extends 'layout.html' %}
+
+{% block title %}Application Form | CreditShield AI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="glass-card">
+            <h2 class="mb-4 text-center" style="font-family: 'Outfit', sans-serif;">
+                <i class="fas fa-file-invoice-dollar text-primary me-2"></i>Credit Card Application Evaluation Form
+            </h2>
+            <p class="text-secondary text-center small mb-5">
+                Fill out the applicant details below. All fields are mandatory and validated against client-side constraints before running prediction scoring.
+            </p>
+
+            <form id="predict-form" action="{{ url_for('predict_post') }}" method="POST">
+                
+                <!-- Section 1: Demographics -->
+                <h4 class="mb-3 text-cyan border-bottom pb-2" style="font-family: 'Outfit', sans-serif;">
+                    <i class="fas fa-user-gear me-2"></i>1. Demographic Details
+                </h4>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label for="CODE_GENDER" class="form-label form-label-custom">Gender</label>
+                        <select name="CODE_GENDER" id="CODE_GENDER" class="form-select form-control-custom" required>
+                            <option value="F">Female</option>
+                            <option value="M">Male</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="AGE_YEARS" class="form-label form-label-custom">Age (Years)</label>
+                        <input type="number" step="0.1" name="AGE_YEARS" id="AGE_YEARS" class="form-control form-control-custom" placeholder="e.g. 35" min="18" max="100" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="NAME_FAMILY_STATUS" class="form-label form-label-custom">Family Status</label>
+                        <select name="NAME_FAMILY_STATUS" id="NAME_FAMILY_STATUS" class="form-select form-control-custom" required>
+                            <option value="Married">Married</option>
+                            <option value="Single / not married">Single / not married</option>
+                            <option value="Civil marriage">Civil marriage</option>
+                            <option value="Separated">Separated</option>
+                            <option value="Widow">Widow</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="CNT_CHILDREN" class="form-label form-label-custom">Number of Children</label>
+                        <input type="number" name="CNT_CHILDREN" id="CNT_CHILDREN" class="form-control form-control-custom" value="0" min="0" max="15" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="CNT_FAM_MEMBERS" class="form-label form-label-custom">Total Family Members</label>
+                        <input type="number" name="CNT_FAM_MEMBERS" id="CNT_FAM_MEMBERS" class="form-control form-control-custom" value="1" min="1" max="17" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="NAME_EDUCATION_TYPE" class="form-label form-label-custom">Education level</label>
+                        <select name="NAME_EDUCATION_TYPE" id="NAME_EDUCATION_TYPE" class="form-select form-control-custom" required>
+                            <option value="Secondary / secondary special">Secondary / secondary special</option>
+                            <option value="Higher education">Higher education</option>
+                            <option value="Incomplete higher">Incomplete higher</option>
+                            <option value="Lower secondary">Lower secondary</option>
+                            <option value="Academic degree">Academic degree</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 2: Financials & Housing -->
+                <h4 class="mb-3 text-cyan border-bottom pb-2" style="font-family: 'Outfit', sans-serif;">
+                    <i class="fas fa-wallet me-2"></i>2. Financials & Housing Profile
+                </h4>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label for="AMT_INCOME_TOTAL" class="form-label form-label-custom">Annual Income (USD / local currency)</label>
+                        <input type="number" step="1" name="AMT_INCOME_TOTAL" id="AMT_INCOME_TOTAL" class="form-control form-control-custom" placeholder="e.g. 150000" min="1000" max="10000000" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="NAME_INCOME_TYPE" class="form-label form-label-custom">Income Source Type</label>
+                        <select name="NAME_INCOME_TYPE" id="NAME_INCOME_TYPE" class="form-select form-control-custom" required>
+                            <option value="Working">Working</option>
+                            <option value="Commercial associate">Commercial associate</option>
+                            <option value="Pensioner">Pensioner</option>
+                            <option value="State servant">State servant</option>
+                            <option value="Student">Student</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="FLAG_OWN_CAR" class="form-label form-label-custom">Owns a Car?</label>
+                        <select name="FLAG_OWN_CAR" id="FLAG_OWN_CAR" class="form-select form-control-custom" required>
+                            <option value="N">No (N)</option>
+                            <option value="Y">Yes (Y)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="FLAG_OWN_REALTY" class="form-label form-label-custom">Owns Real Estate Property?</label>
+                        <select name="FLAG_OWN_REALTY" id="FLAG_OWN_REALTY" class="form-select form-control-custom" required>
+                            <option value="Y">Yes (Y)</option>
+                            <option value="N">No (N)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="NAME_HOUSING_TYPE" class="form-label form-label-custom">Housing Arrangement</label>
+                        <select name="NAME_HOUSING_TYPE" id="NAME_HOUSING_TYPE" class="form-select form-control-custom" required>
+                            <option value="House / apartment">House / apartment</option>
+                            <option value="With parents">With parents</option>
+                            <option value="Municipal apartment">Municipal apartment</option>
+                            <option value="Rented apartment">Rented apartment</option>
+                            <option value="Office apartment">Office apartment</option>
+                            <option value="Co-op apartment">Co-op apartment</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 3: Employment -->
+                <h4 class="mb-3 text-cyan border-bottom pb-2" style="font-family: 'Outfit', sans-serif;">
+                    <i class="fas fa-briefcase me-2"></i>3. Employment Info
+                </h4>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label for="IS_UNEMPLOYED" class="form-label form-label-custom">Employment Status</label>
+                        <select name="IS_UNEMPLOYED" id="IS_UNEMPLOYED" class="form-select form-control-custom" required>
+                            <option value="0">Employed / Working</option>
+                            <option value="1">Unemployed / Retired</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="EMPLOYMENT_YEARS" class="form-label form-label-custom">Years of Employment</label>
+                        <input type="number" step="0.1" name="EMPLOYMENT_YEARS" id="EMPLOYMENT_YEARS" class="form-control form-control-custom" value="1.0" min="0" max="60" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="OCCUPATION_TYPE" class="form-label form-label-custom">Occupation Category</label>
+                        <select name="OCCUPATION_TYPE" id="OCCUPATION_TYPE" class="form-select form-control-custom" required>
+                            <option value="Other/Unspecified">Other/Unspecified</option>
+                            <option value="Laborers">Laborers</option>
+                            <option value="Core staff">Core staff</option>
+                            <option value="Sales staff">Sales staff</option>
+                            <option value="Managers">Managers</option>
+                            <option value="Drivers">Drivers</option>
+                            <option value="High skill tech staff">High skill tech staff</option>
+                            <option value="Accountants">Accountants</option>
+                            <option value="Medicine staff">Medicine staff</option>
+                            <option value="Pensioner">Pensioner</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 4: Communication flags -->
+                <h4 class="mb-3 text-cyan border-bottom pb-2" style="font-family: 'Outfit', sans-serif;">
+                    <i class="fas fa-phone-volume me-2"></i>4. Contact Flags
+                </h4>
+                <div class="row g-3 mb-5">
+                    <div class="col-md-4">
+                        <label for="FLAG_WORK_PHONE" class="form-label form-label-custom">Work Phone Provided?</label>
+                        <select name="FLAG_WORK_PHONE" id="FLAG_WORK_PHONE" class="form-select form-control-custom" required>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="FLAG_PHONE" class="form-label form-label-custom">Home/Personal Phone?</label>
+                        <select name="FLAG_PHONE" id="FLAG_PHONE" class="form-select form-control-custom" required>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="FLAG_EMAIL" class="form-label form-label-custom">Email Address Provided?</label>
+                        <select name="FLAG_EMAIL" id="FLAG_EMAIL" class="form-select form-control-custom" required>
+                            <option value="0">No (0)</option>
+                            <option value="1">Yes (1)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-glow btn-lg">
+                        <i class="fas fa-calculator me-2"></i>Submit Application & Run Risk Prediction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

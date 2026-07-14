@@ -1,0 +1,80 @@
+{% extends 'layout.html' %}
+
+{% block title %}About Project | CreditShield AI{% endblock %}
+
+{% block content %}
+<div class="glass-card mb-5">
+    <h2 class="mb-4" style="font-family: 'Outfit', sans-serif;"><i class="fas fa-circle-info text-primary me-2"></i>Project Information & Technical Specifications</h2>
+    
+    <div class="row g-4 mt-2">
+        <div class="col-lg-8">
+            <h4 class="text-cyan mb-3 font-monospace">[Project Overview]</h4>
+            <p class="text-secondary">
+                Banks and lending institutions receive millions of credit card applications annually. Manually reviewing and scoring each application is slow, operationally expensive, inconsistent, and highly vulnerable to human bias or error. 
+            </p>
+            <p class="text-secondary">
+                This project builds a state-of-the-art automated decisioning engine using historical customer profile credit card payment records. The machine learning pipeline trains multiple classifiers and selects the optimal model to render instant approval determinations while categorizing risk classes under high validation standards.
+            </p>
+            
+            <h4 class="text-cyan mb-3 mt-5 font-monospace">[Data Preprocessing Pipeline]</h4>
+            <ul class="text-secondary small">
+                <li><strong>Merging & Target Formulation</strong>: Application profiles (`application_record.csv`) are matched with credit monthly payment statements (`credit_record.csv`). Applicants are labeled as "Good" (Approved) or "Bad" (Rejected) depending on whether they ever cross a 60-day delinquency threshold.</li>
+                <li><strong>Handling Missing Data</strong>: Undefined jobs in the `OCCUPATION_TYPE` column are resolved based on days of employment (e.g. mapping retired/unemployed rows to "Pensioner" and others to "Other/Unspecified").</li>
+                <li><strong>Feature Scaling</strong>: Numeric attributes like income, age, family counts, and job tenure are standardized using `StandardScaler`.</li>
+                <li><strong>Categorical Encoding</strong>: Multi-class values are converted using a robust `OneHotEncoder` with ignore options for unseen parameters in incoming online queries.</li>
+            </ul>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="p-3 border rounded shadow-sm" style="border-color: var(--card-border) !important; background: rgba(255, 255, 255, 0.015);">
+                <h5 class="mb-3 text-cyan font-monospace" style="font-size: 0.95rem;">[IBM Watson Architecture]</h5>
+                <p class="text-secondary small">
+                    This project is designed for enterprise scaling with:
+                </p>
+                <ol class="text-secondary small ps-3">
+                    <li>Models serialized to pickled files (`scaler.pkl`, `encoder.pkl`, `best_model.pkl`).</li>
+                    <li>Serialized structures pushed to <strong>IBM Cloud Object Storage (COS)</strong>.</li>
+                    <li>Online deployment via the **IBM Watson Machine Learning (WML)** service registry.</li>
+                    <li>Online scoring endpoints accessed through Flask REST calls.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3 class="mb-4" style="font-family: 'Outfit', sans-serif;">Machine Learning Models Comparison</h3>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="glass-card">
+            <h5 class="text-cyan font-monospace"><i class="fas fa-arrows-split-up-and-left me-2"></i>Logistic Regression</h5>
+            <p class="text-secondary small mt-2">
+                A classic linear model serving as our baseline. It models the probability of credit approval using the logistic sigmoid function. Highly interpretable but lacks capability for capturing complex non-linear feature interactions.
+            </p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card">
+            <h5 class="text-cyan font-monospace"><i class="fas fa-diagram-project me-2"></i>Decision Tree Classifier</h5>
+            <p class="text-secondary small mt-2">
+                Creates decision boundaries by splitting data based on information gain or Gini impurity thresholds. Capable of modeling complex conditions, but prone to high variance and overfitting if uncontrolled.
+            </p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card">
+            <h5 class="text-cyan font-monospace"><i class="fas fa-tree-deciduous me-2"></i>Random Forest Classifier</h5>
+            <p class="text-secondary small mt-2">
+                An ensemble bagging method that constructs numerous independent decision trees at training time and outputs the mode of classes or average prediction. Highly robust against overfitting and offers excellent feature importance insights.
+            </p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card">
+            <h5 class="text-cyan font-monospace"><i class="fas fa-ranking-star me-2"></i>XGBoost Classifier</h5>
+            <p class="text-secondary small mt-2">
+                A state-of-the-art gradient boosted decision tree algorithm. It iteratively builds trees to correct errors made by previous estimators. Outperforms other algorithms on tabular data with regularization controls and parallel execution.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

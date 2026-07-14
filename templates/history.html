@@ -1,0 +1,77 @@
+{% extends 'layout.html' %}
+
+{% block title %}Prediction History | CreditShield AI{% endblock %}
+
+{% block content %}
+<div class="glass-card">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <h2 class="mb-0" style="font-family: 'Outfit', sans-serif;">
+            <i class="fas fa-list-check text-primary me-2"></i>Prediction Evaluation History
+        </h2>
+        <a href="{{ url_for('predict_form') }}" class="btn btn-glow btn-sm">
+            <i class="fas fa-plus me-1"></i>New Evaluation
+        </a>
+    </div>
+    
+    <p class="text-secondary small mb-4">
+        Below is a log of credit card evaluations performed during this session. Restarting the Flask server will clear this in-memory list.
+    </p>
+
+    {% if history_list %}
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle border border-secondary border-opacity-10 text-nowrap" style="background: transparent;">
+                <thead>
+                    <tr class="font-monospace text-cyan" style="font-size: 0.85rem; border-bottom: 2px solid var(--card-border);">
+                        <th>Outcome</th>
+                        <th>Confidence</th>
+                        <th>Risk</th>
+                        <th>Income</th>
+                        <th>Gender</th>
+                        <th>Age</th>
+                        <th>Employment</th>
+                        <th>Occupation</th>
+                    </tr>
+                </thead>
+                <tbody class="small text-secondary">
+                    {% for item in history_list %}
+                        <tr style="border-bottom: 1px solid var(--card-border);">
+                            <td>
+                                {% if item.PREDICTION == 'Approved' %}
+                                    <span class="badge badge-approved bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill">
+                                        <i class="fas fa-circle-check me-1"></i>Approved
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-rejected bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 rounded-pill">
+                                        <i class="fas fa-circle-xmark me-1"></i>Rejected
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-bold text-white">{{ item.CONFIDENCE }}%</td>
+                            <td>
+                                {% if item.RISK == 'Low Risk' %}
+                                    <span class="text-success"><i class="fas fa-shield me-1"></i>Low</span>
+                                {% elif item.RISK == 'Medium Risk' %}
+                                    <span class="text-warning"><i class="fas fa-triangle-exclamation me-1"></i>Medium</span>
+                                {% else %}
+                                    <span class="text-danger"><i class="fas fa-skull-crossbones me-1"></i>High</span>
+                                {% endif %}
+                            </td>
+                            <td>${{ "{:,.2f}".format(item.AMT_INCOME_TOTAL) }}</td>
+                            <td>{{ item.CODE_GENDER }}</td>
+                            <td>{{ item.AGE_YEARS }} yrs</td>
+                            <td>{{ item.EMPLOYMENT_YEARS }} yrs</td>
+                            <td>{{ item.OCCUPATION_TYPE }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5 text-secondary">
+            <i class="fas fa-folder-open fa-3x mb-3 text-muted"></i>
+            <p>No credit card evaluations logged in this session yet.</p>
+            <p class="small"><a href="{{ url_for('predict_form') }}" class="text-primary">Launch the Predictor</a> to perform your first evaluation.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
